@@ -17,7 +17,7 @@ class SignupScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Join with us',
+                  'Create Account',
                   style: Theme
                       .of(context)
                       .textTheme
@@ -26,13 +26,15 @@ class SignupScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 const TextField(
                   decoration: InputDecoration(
-                    hintText: 'Email',
+                    hintText: 'Name',
+                    prefixIcon: Icon(Icons.person),
                   ),
                 ),
                 const SizedBox(height: 16),
                 const TextField(
                   decoration: InputDecoration(
-                    hintText: 'Phone Number',
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.email),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -40,6 +42,7 @@ class SignupScreen extends StatelessWidget {
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Password',
+                    prefixIcon: Icon(Icons.lock),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -47,6 +50,7 @@ class SignupScreen extends StatelessWidget {
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Confirm Password',
+                    prefixIcon: Icon(Icons.lock),
                   ),
                 ),
                 const SizedBox(height: 16),

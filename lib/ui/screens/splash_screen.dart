@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void navigateToLogin() {
-    Future.delayed(const Duration(seconds: 5)).then((_) {
+    Future.delayed(const Duration(seconds: 10)).then((_) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -33,10 +33,10 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: ScreenBackground(
         child: Center(
-            child: SvgPicture.asset(
-              AssetsUtils.logoSVG,
-              width: 90,
-              fit: BoxFit.scaleDown,
+            child: Image.asset(
+              AssetsUtils.logoPNG,
+              width: 200,
+              fit: BoxFit.contain,
             )),
       ),
     );

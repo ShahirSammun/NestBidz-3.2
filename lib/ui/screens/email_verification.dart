@@ -33,6 +33,7 @@ class EmailVerification extends StatelessWidget {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Email',
+                  prefixIcon: Icon(Icons.email),
                 ),
               ),
               const SizedBox(

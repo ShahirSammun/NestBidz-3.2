@@ -15,10 +15,10 @@ class LoginScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Get Started With',
+                    'NESTBIDZ',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(
@@ -27,6 +27,7 @@ class LoginScreen extends StatelessWidget {
                   const TextField(
                     decoration: InputDecoration(
                       hintText: 'Email',
+                      prefixIcon: Icon(Icons.email),
                     ),
                   ),
                   const SizedBox(
@@ -36,6 +37,8 @@ class LoginScreen extends StatelessWidget {
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
+                      prefixIcon: Icon(Icons.lock),
+
                     ),
                   ),
                   const SizedBox(
@@ -58,7 +61,7 @@ class LoginScreen extends StatelessWidget {
                           },
                           child: const Text(
                             'Forgot Password?',
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: Colors.black),
                           ))),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

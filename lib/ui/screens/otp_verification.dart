@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_application6/ui/screens/login_screen.dart';
+import 'package:mobile_application6/ui/screens/reset_password.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+
+import 'login_screen.dart';
 
 class OtpVerification extends StatelessWidget {
   const OtpVerification({super.key});
@@ -51,7 +53,7 @@ class OtpVerification extends StatelessWidget {
                 ),
                 animationDuration: const Duration(milliseconds: 300),
                 enableActiveFill: true,
-                cursorColor: Colors.green,
+                cursorColor: Colors.black,
                 enablePinAutofill: true,
                 onCompleted: (v) {},
                 onChanged: (value) {},
@@ -67,7 +69,12 @@ class OtpVerification extends StatelessWidget {
               ),
               Center(
                 child: ElevatedButton(
-                    onPressed: () {}, child: const Text('Verify')),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ResetPassword()));
+                    }, child: const Text('Verify')),
               ),
               const SizedBox(
                 height: 6,
@@ -85,7 +92,8 @@ class OtpVerification extends StatelessWidget {
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const LoginScreen()),
+                                builder: (context) =>
+                                const LoginScreen()),
                                 (route) => false);
                       },
                       child: const Text('Sign in')),
