@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/screens/login_screen.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  List<bool> isSelected = [true, false]; // [Seller, Buyer]
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +25,7 @@ class SignupScreen extends StatelessWidget {
               children: [
                 Text(
                   'Create Account',
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
                 const TextField(
@@ -53,10 +57,39 @@ class SignupScreen extends StatelessWidget {
                     prefixIcon: Icon(Icons.lock),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+
+                // Centered Toggle Button with smaller size
+                Center(
+                  child: ToggleButtons(
+                    borderRadius: BorderRadius.circular(8),
+                    isSelected: isSelected,
+                    onPressed: (int index) {
+                      setState(() {
+                        for (int i = 0; i < isSelected.length; i++) {
+                          isSelected[i] = i == index;
+                        }
+                      });
+                    },
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12), // smaller width
+                        child: Text("Seller"),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12), // smaller width
+                        child: Text("Buyer"),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Your signup logic here
+                    },
                     child: const Text('Sign up'),
                   ),
                 ),
@@ -67,14 +100,21 @@ class SignupScreen extends StatelessWidget {
                     const Text(
                       "Have an account?",
                       style: TextStyle(
-                          fontWeight: FontWeight.w500, letterSpacing: 0.5),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                    TextButton(onPressed: () {
-                      Navigator.push(
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginScreen()));
-                    }, child: const Text('Sign in')),
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('Sign in'),
+                    ),
                   ],
                 ),
               ],
