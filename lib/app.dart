@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/screens/splash_screen.dart';
 
-
-
 class NestBidzApp extends StatelessWidget {
   const NestBidzApp({Key? key}) : super(key: key);
 
@@ -21,11 +19,12 @@ class NestBidzApp extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide.none),
           ),
-          textTheme: const TextTheme(
+          textTheme:  const TextTheme(
             titleLarge: TextStyle(
                 fontSize: 32,
                 color: Colors.black,
                 fontWeight: FontWeight.w500,
+                fontStyle:FontStyle.italic,
                 letterSpacing: 0.6
             ),
           ),

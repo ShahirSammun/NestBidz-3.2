@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_application6/ui/screens/login_screen.dart';
+import 'package:mobile_application6/ui/screens/Buyer_homePage.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -109,7 +109,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
+                            builder: (context) => const HomePage(),
                           ),
                         );
                       },
