@@ -26,21 +26,19 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.person),
             title: const Text('Profile'),
             onTap: () {
-              // Navigate to Profile Page
             },
           ),
           ListTile(
             leading: const Icon(Icons.list),
             title: const Text('My Listings'),
             onTap: () {
-              // Navigate to Listings Page
             },
           ),
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About Us'),
             onTap: () {
-              Navigator.pop(context); // close drawer
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AboutUsPage()),
@@ -51,7 +49,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
-              Navigator.pop(context); // Close drawer first
+              Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),

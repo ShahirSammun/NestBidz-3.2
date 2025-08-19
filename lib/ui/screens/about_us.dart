@@ -12,7 +12,7 @@ class AboutUsPage extends StatelessWidget {
           "About Us",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.cyan, // keep same
+        backgroundColor: Colors.grey,
         centerTitle: true,
       ),
       body: const ScreenBackground(
@@ -22,8 +22,6 @@ class AboutUsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
-                /// Instructor Section
                 Text(
                   "Instructed By:",
                   style: TextStyle(
@@ -52,8 +50,6 @@ class AboutUsPage extends StatelessWidget {
                 ),
 
                 SizedBox(height: 28),
-
-                /// Developers Section
                 Text(
                   "Developed By:",
                   style: TextStyle(
@@ -62,8 +58,6 @@ class AboutUsPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-
-                /// Member 1
                 CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/sammun.jpg"),
@@ -85,7 +79,6 @@ class AboutUsPage extends StatelessWidget {
 
                 SizedBox(height: 23),
 
-                /// Member 2
                 CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/kamran.jpg"),
@@ -107,7 +100,6 @@ class AboutUsPage extends StatelessWidget {
 
                 SizedBox(height: 23),
 
-                /// Member 3
                 CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/nusrat.jpg"),

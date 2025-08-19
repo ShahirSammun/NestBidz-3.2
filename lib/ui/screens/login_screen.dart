@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_application6/ui/screens/Buyer_homePage.dart';
 import 'package:mobile_application6/ui/screens/email_verification.dart';
 import 'package:mobile_application6/ui/screens/signup_screen.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
@@ -45,8 +46,17 @@ class LoginScreen extends StatelessWidget {
                     height: 16,
                   ),
                   Center(
-                      child: ElevatedButton(
-                          onPressed: () {}, child: const Text('Sign in'))),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Navigate to HomePage
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
+                        );
+                      },
+                      child: const Text('Sign in'),
+                    ),
+                  ),
                   const SizedBox(
                     height: 14,
                   ),
