@@ -81,12 +81,12 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 80),
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 17),
 
                   // Name
                   TextField(
@@ -100,7 +100,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 17),
 
                   // Email
                   TextField(
@@ -114,7 +114,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 17),
 
                   // Password
                   TextField(
@@ -129,7 +129,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 17),
 
                   // Confirm Password
                   TextField(
