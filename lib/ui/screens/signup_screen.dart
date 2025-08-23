@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/screens/login_screen.dart';
+import 'package:mobile_application6/ui/screens/seller_homepage.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -34,24 +35,20 @@ class _SignupScreenState extends State<SignupScreen> {
       String password = _passwordController.text.trim();
       String confirmPassword = _confirmPasswordController.text.trim();
 
-      // Name validation
       if (name.isEmpty) {
         _nameError = "Please enter your name.";
       }
 
-      // Email validation
       if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
           .hasMatch(email)) {
         _emailError = "Please enter a valid email.";
       }
 
-      // Password validation (at least 8 chars, one number, one symbol)
       if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#%^&*]).{8,}$').hasMatch(password)) {
         _passwordError =
         "Password must be 8+ chars,\ninclude letter, number & symbol.";
       }
 
-      // Confirm password validation
       if (confirmPassword != password) {
         _confirmPasswordError = "Passwords do not match.";
       }
@@ -64,8 +61,16 @@ class _SignupScreenState extends State<SignupScreen> {
           const SnackBar(
             content: Text("Signup Successful"),
             backgroundColor: Colors.lightGreen,
+            duration: Duration(seconds: 2), // Show for 2 seconds
           ),
         );
+
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        });
       }
     });
   }
@@ -146,7 +151,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Toggle Buttons
                   Center(
                     child: ToggleButtons(
                       borderRadius: BorderRadius.circular(8),
@@ -198,7 +202,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
+                              builder: (context) => const SellerHomePage(),
                             ),
                           );
                         },

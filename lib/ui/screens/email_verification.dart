@@ -2,8 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/screens/otp_verification.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
-class EmailVerification extends StatelessWidget {
+class EmailVerification extends StatefulWidget {
   const EmailVerification({super.key});
+
+  @override
+  State<EmailVerification> createState() => _EmailVerificationState();
+}
+
+class _EmailVerificationState extends State<EmailVerification> {
+  final TextEditingController _emailController = TextEditingController();
+  String? _emailError;
+
+  void _validateEmail() {
+    setState(() {
+      _emailError = null;
+      String email = _emailController.text.trim();
+
+      if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
+          .hasMatch(email)) {
+        _emailError = "Please enter a valid email";
+      }
+
+      if (_emailError == null) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const OtpVerification()));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,43 +41,42 @@ class EmailVerification extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 94,),
+              const SizedBox(height: 94),
               Text(
-                'Your Email Address',
+                'Enter Email Address',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(
-                height: 4,
-              ),
+              const SizedBox(height: 4),
               Text(
                 'A 6 digit PIN will be sent to your email',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(
-                height: 24,
-              ),
-              const TextField(
+              const SizedBox(height: 24),
+
+              // Email TextField with validation
+              TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Email',
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: const Icon(Icons.email),
+                  errorText: _emailError,
+                  suffixIcon: _emailError != null
+                      ? const Icon(Icons.warning, color: Colors.red)
+                      : null,
                 ),
               ),
-              const SizedBox(
-                height: 14,
-              ),
+              const SizedBox(height: 14),
+
+              // Confirm button
               Center(
                 child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const OtpVerification()));
-                    }, child: const Text('Confirm')),
+                    onPressed: _validateEmail,
+                    child: const Text('Confirm')),
               ),
-              const SizedBox(
-                height: 6,
-              ),
+              const SizedBox(height: 6),
+
+              // Sign in link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -65,7 +91,7 @@ class EmailVerification extends StatelessWidget {
                       },
                       child: const Text('Sign in')),
                 ],
-              )
+              ),
             ],
           ),
         ),
