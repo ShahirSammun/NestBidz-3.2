@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
-class FeaturedProperties extends StatelessWidget {
+class RecentlyAddedPage extends StatelessWidget {
   final List<Map<String, dynamic>> properties = [
     {
       "title": "Pearl Villa 2 BHK with top rated price",
@@ -57,11 +57,11 @@ class FeaturedProperties extends StatelessWidget {
                   const Expanded(
                     child: Center(
                       child: Text(
-                        "Featured Properties",
+                        "Recently Added Listings",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontStyle:FontStyle.italic,
-                          fontSize: 26,
+                          fontSize: 24,
                         ),
                       ),
                     ),

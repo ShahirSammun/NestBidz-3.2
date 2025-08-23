@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_application6/ui/screens/featured_properties.dart';
+import 'package:mobile_application6/ui/screens/add_property.dart';
+import 'package:mobile_application6/ui/screens/recently_added.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 import '../widget/appDrawer.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class SellerHomePage extends StatelessWidget {
+  const SellerHomePage({Key? key}) : super(key: key);
 
   static const List<Map<String, String>> featuredProperties = [
     {
@@ -64,25 +65,9 @@ class HomePage extends StatelessWidget {
                       const SizedBox(width: 40),
                     ],
                   ),
-                  const SizedBox(height: 50),
-                  Container(
-                    height: 50,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "What are you looking for?",
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16),
-                        suffixIcon: const Icon(Icons.search),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 60),
+
+                  // Categories Section
                   const Text(
                     "Categories",
                     style: TextStyle(
@@ -96,15 +81,17 @@ class HomePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: categories
                         .map((cat) =>
-                        _categoryItem(cat['image']!, cat['title']!))
+                        _categoryItem(context, cat['image']!, cat['title']!))
                         .toList(),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 30),
+
+                  // Recently Added Listings
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "Featured Properties",
+                        "Recently Added Listings",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
@@ -115,7 +102,8 @@ class HomePage extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => FeaturedProperties()),
+                            MaterialPageRoute(
+                                builder: (context) => RecentlyAddedPage()),
                           );
                         },
                         child: const Text(
@@ -201,7 +189,10 @@ class HomePage extends StatelessWidget {
                       },
                     ),
                   ),
+
                   const Spacer(),
+
+                  // Bottom Navigation Icons
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
@@ -210,11 +201,10 @@ class HomePage extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        const Icon(Icons.home, color: Colors.black),
-                        const Icon(Icons.chat_bubble_outline,
-                              color: Colors.black),
-                        const Icon(Icons.favorite_border, color: Colors.black),
+                      children: const [
+                        Icon(Icons.home, color: Colors.black),
+                        Icon(Icons.chat_bubble_outline, color: Colors.black),
+                        Icon(Icons.favorite_border, color: Colors.black),
                       ],
                     ),
                   ),
@@ -226,22 +216,33 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-  static Widget _categoryItem(String imagePath, String title) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: Colors.white,
-          child: Image.asset(
-            imagePath,
-            width: 38,
-            height: 38,
-            fit: BoxFit.contain,
+
+  // Updated _categoryItem with navigation
+  static Widget _categoryItem(BuildContext context, String imagePath, String title) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to AddPropertyScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddPropertyScreen()),
+        );
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.white,
+            child: Image.asset(
+              imagePath,
+              width: 38,
+              height: 38,
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(title),
-      ],
+          const SizedBox(height: 8),
+          Text(title),
+        ],
+      ),
     );
   }
 }
