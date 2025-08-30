@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
+import 'property_details.dart'; // <-- import details screen
 
 class FeaturedProperties extends StatelessWidget {
   final List<Map<String, dynamic>> properties = [
@@ -8,7 +9,7 @@ class FeaturedProperties extends StatelessWidget {
       "type": "Villa",
       "area": "120 m²",
       "location": "Mirpur - Dhaka",
-      "price": "\TK4000000.00",
+      "price": "TK 4000000.00",
       "image": "assets/images/villaa.jpg"
     },
     {
@@ -16,7 +17,7 @@ class FeaturedProperties extends StatelessWidget {
       "type": "Apartment",
       "area": "130 m²",
       "location": "Housing Estate - Sylhet",
-      "price": "\TK3500000.00",
+      "price": "TK 3500000.00",
       "image": "assets/images/apartment.jpg"
     },
     {
@@ -24,7 +25,7 @@ class FeaturedProperties extends StatelessWidget {
       "type": "Mess",
       "area": "80 m²",
       "location": "Zindabazar - Sylhet",
-      "price": "\TK8000.00",
+      "price": "TK 8000.00",
       "image": "assets/images/mess2.jpg"
     },
     {
@@ -32,7 +33,7 @@ class FeaturedProperties extends StatelessWidget {
       "type": "Plot",
       "area": "200 m²",
       "location": "Gazipur - Dhaka",
-      "price": "\TK50000000.00",
+      "price": "TK 50000000.00",
       "image": "assets/images/plot22.jpg"
     },
   ];
@@ -60,13 +61,13 @@ class FeaturedProperties extends StatelessWidget {
                         "Featured Properties",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontStyle:FontStyle.italic,
+                          fontStyle: FontStyle.italic,
                           fontSize: 26,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // To balance back button
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -79,77 +80,91 @@ class FeaturedProperties extends StatelessWidget {
                 itemCount: properties.length,
                 itemBuilder: (context, index) {
                   final property = properties[index];
-                  return Card(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    elevation: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
-                          child: Image.asset(
-                            property["image"],
-                            height: 180,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              PropertyDetailsScreen(property: property),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.square_foot,
-                                      size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(property["area"],
-                                      style: TextStyle(
-                                          color: Colors.grey[600], fontSize: 12)),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.home,
-                                      size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(property["type"],
-                                      style: TextStyle(
-                                          color: Colors.grey[600], fontSize: 12)),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                property["title"],
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                property["location"],
-                                style: TextStyle(
-                                    color: Colors.grey[700], fontSize: 12),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                property["price"],
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                            ],
+                      );
+                    },
+                    child: Card(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      elevation: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16)),
+                            child: Image.asset(
+                              property["image"],
+                              height: 180,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.square_foot,
+                                        size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(property["area"],
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12)),
+                                    const SizedBox(width: 12),
+                                    const Icon(Icons.home,
+                                        size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(property["type"],
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  property["title"],
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  property["location"],
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  property["price"],
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },

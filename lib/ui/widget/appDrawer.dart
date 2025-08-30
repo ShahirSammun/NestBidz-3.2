@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_application6/ui/screens/Profile_Page.dart';
 import 'package:mobile_application6/ui/screens/about_us.dart';
+import 'package:mobile_application6/ui/screens/listing_Page.dart';
 import '../screens/login_screen.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -26,12 +28,22 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.person),
             title: const Text('Profile'),
             onTap: () {
-            },
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyProfileScreen()),
+              );
+            }
           ),
           ListTile(
             leading: const Icon(Icons.list),
             title: const Text('My Listings'),
             onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ListingScreen()),
+              );
             },
           ),
           ListTile(
