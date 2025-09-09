@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -12,6 +14,39 @@ class MyProfileScreen extends StatefulWidget {
 class _MyProfileScreenState extends State<MyProfileScreen> {
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  String? name;
+  String? email;
+  String? role;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (doc.exists) {
+          setState(() {
+            name = doc['name'];
+            email = doc['email'];
+            role = doc['role'];
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching profile: $e")),
+      );
+    }
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -35,11 +70,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Stack(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
         children: [
           Column(
             children: [
-              // Blue gradient (top half)
               Expanded(
                 flex: 1,
                 child: Container(
@@ -55,29 +91,21 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back,
-                            color: Colors.black, size: 28), // black back button
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
+                        icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
                   ),
                 ),
               ),
-              Expanded(
-                flex: 1,
-                child: Container(color: Colors.transparent),
-              ),
+              Expanded(flex: 1, child: Container(color: Colors.transparent)),
             ],
           ),
-
-          // White card overlapping blue background and extending to bottom
           Positioned(
             top: screenHeight * 0.35,
             left: 0,
             right: 0,
-            bottom: 0, // extends fully to bottom
+            bottom: 0,
             child: Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -87,53 +115,37 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   topRight: Radius.circular(40),
                 ),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 15,
-                    offset: Offset(0, -5),
-                  ),
+                  BoxShadow(color: Colors.black12, blurRadius: 15, offset: Offset(0, -5)),
                 ],
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      SizedBox(height: 75), // push text slightly up
+                    children: [
+                      const SizedBox(height: 75),
                       Text(
-                        "John Doe",
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                        name ?? '',
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        "john.doe@email.com",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        email ?? '',
+                        style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.w500),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       Text(
-                        "Role: Buyer",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        "Role: ${role ?? ''}",
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
-                      SizedBox(height: 500), // ensures card visually fills screen
+                      const SizedBox(height: 500),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Profile picture with edit icon
           Positioned(
             top: screenHeight * 0.25,
             left: 0,
@@ -142,7 +154,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               child: Stack(
                 children: [
                   CircleAvatar(
-                    radius: 78, // keep original size
+                    radius: 78,
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!) as ImageProvider
                         : const AssetImage("assets/images/profile23.png"),
@@ -155,8 +167,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       child: CircleAvatar(
                         backgroundColor: Colors.blue,
                         radius: 22,
-                        child: const Icon(Icons.edit,
-                            color: Colors.white, size: 20),
+                        child: const Icon(Icons.edit, color: Colors.white, size: 20),
                       ),
                     ),
                   ),

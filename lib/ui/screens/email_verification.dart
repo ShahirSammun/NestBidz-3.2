@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_application6/ui/screens/otp_verification.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobile_application6/ui/screens/login_screen.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
 class EmailVerification extends StatefulWidget {
@@ -12,24 +13,49 @@ class EmailVerification extends StatefulWidget {
 class _EmailVerificationState extends State<EmailVerification> {
   final TextEditingController _emailController = TextEditingController();
   String? _emailError;
+  bool _loading = false;
 
-  void _validateEmail() {
+  Future<void> _sendResetLink() async {
     setState(() {
       _emailError = null;
-      String email = _emailController.text.trim();
-
-      if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
-          .hasMatch(email)) {
-        _emailError = "Please enter a valid email";
-      }
-
-      if (_emailError == null) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const OtpVerification()));
-      }
     });
+
+    String email = _emailController.text.trim();
+
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$").hasMatch(email)) {
+      setState(() {
+        _emailError = "Please enter a valid email";
+      });
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      // Show success Snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Reset link sent! Please check your inbox or spam folder."),
+          backgroundColor: Colors.lightGreen,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate back to LoginScreen after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      });
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.message}")),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -48,7 +74,7 @@ class _EmailVerificationState extends State<EmailVerification> {
               ),
               const SizedBox(height: 4),
               Text(
-                'A 6 digit PIN will be sent to your email',
+                'A password reset link will be sent to your email',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
@@ -71,8 +97,11 @@ class _EmailVerificationState extends State<EmailVerification> {
               // Confirm button
               Center(
                 child: ElevatedButton(
-                    onPressed: _validateEmail,
-                    child: const Text('Confirm')),
+                  onPressed: _loading ? null : _sendResetLink,
+                  child: _loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Submit'),
+                ),
               ),
               const SizedBox(height: 6),
 

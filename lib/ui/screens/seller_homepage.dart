@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_application6/ui/screens/add_property.dart';
+import 'package:mobile_application6/ui/screens/chat_screen.dart';
 import 'package:mobile_application6/ui/screens/favorite_listing.dart';
 import 'package:mobile_application6/ui/screens/recently_added.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
@@ -195,7 +196,7 @@ class SellerHomePage extends StatelessWidget {
 
                   // Bottom Navigation Icons
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -203,8 +204,23 @@ class SellerHomePage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        const Icon(Icons.home, color: Colors.black),
-                        const Icon(Icons.chat_bubble_outline, color: Colors.black),
+                        IconButton(
+                          icon: const Icon(Icons.home, color: Colors.black),
+                          onPressed: () {
+                            // Add action if needed, or leave empty
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chat_bubble_outline, color: Colors.black),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ChatScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         IconButton(
                           icon: const Icon(Icons.favorite_border, color: Colors.black),
                           onPressed: () {

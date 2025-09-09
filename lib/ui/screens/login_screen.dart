@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_application6/ui/screens/Buyer_homePage.dart';
+import 'package:mobile_application6/ui/screens/Seller_homePage.dart';
 import 'package:mobile_application6/ui/screens/email_verification.dart';
 import 'package:mobile_application6/ui/screens/signup_screen.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
@@ -17,35 +20,82 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _emailError;
   String? _passwordError;
+  bool _loading = false;
 
-  void _validateAndLogin() {
+  Future<void> _validateAndLogin() async {
     setState(() {
       _emailError = null;
       _passwordError = null;
-
-      String email = _emailController.text.trim();
-      String password = _passwordController.text.trim();
-
-      // Email validation (only Gmail or LUS email)
-      if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
-          .hasMatch(email)) {
-        _emailError = "Please enter correct email";}
-
-      password = _passwordController.text.trim();
-
-      if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#%^&*]).{8,}$').hasMatch(password)){
-        _passwordError =
-        "Please enter correct password.";
-      }
-
-      // If no errors -> Navigate
-      if (_emailError == null && _passwordError == null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      }
     });
+
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
+        .hasMatch(email)) {
+      setState(() => _emailError = "Please enter a valid email");
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() => _passwordError = "Password cannot be empty");
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+
+      // Firebase Login
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // Fetch user info from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        throw Exception("User data not found in Firestore");
+      }
+
+      String role = userDoc["role"];
+      String name = userDoc["name"];
+
+      // Show welcome back message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Welcome back, $name!"),
+          backgroundColor: Colors.lightGreen,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate based on role after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (role == "Seller") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const SellerHomePage()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+      });
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed: ${e.message}")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Unexpected error: $e")),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -57,12 +107,8 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'NESTBIDZ',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('NESTBIDZ', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 16),
 
                 // Email
@@ -72,13 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: 'Email',
                     prefixIcon: const Icon(Icons.email),
                     errorText: _emailError,
-                    errorStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                    suffixIcon: _emailError != null
-                        ? const Icon(Icons.warning, color: Colors.red)
-                        : null,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -91,13 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: 'Password',
                     prefixIcon: const Icon(Icons.lock),
                     errorText: _passwordError,
-                    errorStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                    suffixIcon: _passwordError != null
-                        ? const Icon(Icons.warning, color: Colors.red)
-                        : null,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -105,48 +137,40 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Sign In button
                 Center(
                   child: ElevatedButton(
-                    onPressed: _validateAndLogin,
-                    child: const Text('Sign in'),
+                    onPressed: _loading ? null : _validateAndLogin,
+                    child: _loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Sign in'),
                   ),
                 ),
                 const SizedBox(height: 14),
 
                 // Forgot Password
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const EmailVerification(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EmailVerification(),
+                      ),
+                    );
+                  },
+                  child: const Text('Forgot Password?'),
                 ),
+
+                const SizedBox(height: 12),
 
                 // Signup link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    const Text("Don't have an account?"),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SignupScreen(),
-                          ),
+                              builder: (context) => const SignupScreen()),
                         );
                       },
                       child: const Text('Sign up'),
@@ -161,4 +185,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

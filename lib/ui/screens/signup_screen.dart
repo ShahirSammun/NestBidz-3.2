@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_application6/ui/screens/login_screen.dart';
-import 'package:mobile_application6/ui/screens/seller_homepage.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -21,9 +22,12 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _passwordError;
   String? _confirmPasswordError;
 
+  bool _loading = false;
+
   List<bool> isSelected = [true, false]; // [Seller, Buyer]
 
-  void _validateInputs() {
+  // Validate & Firebase Signup
+  void _validateInputs() async {
     setState(() {
       _nameError = null;
       _emailError = null;
@@ -35,44 +39,69 @@ class _SignupScreenState extends State<SignupScreen> {
       String password = _passwordController.text.trim();
       String confirmPassword = _confirmPasswordController.text.trim();
 
-      if (name.isEmpty) {
-        _nameError = "Please enter your name.";
-      }
-
-      if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
-          .hasMatch(email)) {
+      if (name.isEmpty) _nameError = "Please enter your name.";
+      if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$").hasMatch(email)) {
         _emailError = "Please enter a valid email.";
       }
-
       if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#%^&*]).{8,}$').hasMatch(password)) {
-        _passwordError =
-        "Password must be 8+ chars,\ninclude letter, number & symbol.";
+        _passwordError = "Password must be 8+ chars, include letter, number & symbol.";
       }
+      if (confirmPassword != password) _confirmPasswordError = "Passwords do not match.";
+    });
 
-      if (confirmPassword != password) {
-        _confirmPasswordError = "Passwords do not match.";
-      }
+    if (_nameError == null &&
+        _emailError == null &&
+        _passwordError == null &&
+        _confirmPasswordError == null) {
+      setState(() => _loading = true);
+      try {
+        String role = isSelected[0] ? "Seller" : "Buyer";
 
-      if (_nameError == null &&
-          _emailError == null &&
-          _passwordError == null &&
-          _confirmPasswordError == null) {
+        // Firebase Auth Signup
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim());
+
+        // Firestore write
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'role': role,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Signup Successful"),
+            content: Text("Signup successful!"),
             backgroundColor: Colors.lightGreen,
-            duration: Duration(seconds: 2), // Show for 2 seconds
+            duration: Duration(seconds: 2),
           ),
         );
 
+        // Navigate to LoginScreen after 2 seconds
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoginScreen()),
           );
         });
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.message}")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Unexpected error: $e")),
+        );
+      } finally {
+        setState(() => _loading = false);
       }
-    });
+    }
   }
 
   @override
@@ -87,10 +116,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 80),
-                  Text(
-                    'Create Account',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text('Create Account', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 17),
 
                   // Name
@@ -174,14 +200,22 @@ class _SignupScreenState extends State<SignupScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
 
-                  // Signup button
+                  // Sign up button with loading
                   Center(
                     child: ElevatedButton(
-                      onPressed: _validateInputs,
-                      child: const Text('Sign up'),
+                      onPressed: _loading ? null : _validateInputs,
+                      child: _loading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Text('Sign up'),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -190,20 +224,13 @@ class _SignupScreenState extends State<SignupScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Have an account?",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                      const Text("Have an account?",
+                          style: TextStyle(fontWeight: FontWeight.w500, letterSpacing: 0.5)),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const SellerHomePage(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
                           );
                         },
                         child: const Text('Sign in'),
