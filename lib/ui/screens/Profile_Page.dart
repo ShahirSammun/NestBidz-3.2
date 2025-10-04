@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -18,7 +20,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   String? name;
   String? email;
   String? role;
+  String? profileImageUrl; // store from Firestore
   bool isLoading = true;
+  bool isUploading = false;
+
+  final String cloudName = "dzhkytyhh";
+  final String uploadPreset = "Profile";
 
   @override
   void initState() {
@@ -36,6 +43,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
             name = doc['name'];
             email = doc['email'];
             role = doc['role'];
+            profileImageUrl = doc.data()?['profileImage'];
             isLoading = false;
           });
         }
@@ -59,9 +67,51 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         setState(() {
           _imageFile = File(pickedFile.path);
         });
+        await _uploadToCloudinary(_imageFile!);
       }
     } catch (e) {
       debugPrint("Image Picker Error: $e");
+    }
+  }
+
+  Future<void> _uploadToCloudinary(File imageFile) async {
+    setState(() => isUploading = true);
+    try {
+      final url = Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+      final request = http.MultipartRequest("POST", url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      final response = await request.send();
+      final res = await http.Response.fromStream(response);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(res.body);
+        final uploadedUrl = data['secure_url'];
+
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          await FirebaseFirestore.instance.collection('users').doc(uid).update({
+            'profileImage': uploadedUrl,
+          });
+        }
+
+        setState(() {
+          profileImageUrl = uploadedUrl;
+          isUploading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile picture updated")),
+        );
+      } else {
+        throw Exception("Upload failed");
+      }
+    } catch (e) {
+      setState(() => isUploading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error uploading image: $e")),
+      );
     }
   }
 
@@ -157,8 +207,14 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     radius: 78,
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!) as ImageProvider
-                        : const AssetImage("assets/images/profile23.png"),
+                        : (profileImageUrl != null
+                        ? NetworkImage(profileImageUrl!)
+                        : const AssetImage("assets/images/profile23.png")) as ImageProvider,
                   ),
+                  if (isUploading)
+                    const Positioned.fill(
+                      child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                    ),
                   Positioned(
                     bottom: 0,
                     right: 6,

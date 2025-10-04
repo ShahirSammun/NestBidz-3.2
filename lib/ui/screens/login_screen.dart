@@ -21,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _emailError;
   String? _passwordError;
   bool _loading = false;
+  bool _obscurePassword = true;
 
   Future<void> _validateAndLogin() async {
     setState(() {
@@ -31,8 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$")
-        .hasMatch(email)) {
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$").hasMatch(email)) {
       setState(() => _emailError = "Please enter a valid email");
       return;
     }
@@ -45,11 +45,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       setState(() => _loading = true);
 
-      // Firebase Login
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      // Fetch user info from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection("users")
           .doc(userCredential.user!.uid)
@@ -62,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
       String role = userDoc["role"];
       String name = userDoc["name"];
 
-      // Show welcome back message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Welcome back, $name!"),
@@ -71,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      // Navigate based on role after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
         if (role == "Seller") {
           Navigator.pushReplacement(
@@ -111,7 +107,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text('NESTBIDZ', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 16),
 
-                // Email
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -122,19 +117,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // Password
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     hintText: 'Password',
                     prefixIcon: const Icon(Icons.lock),
                     errorText: _passwordError,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Sign In button
                 Center(
                   child: ElevatedButton(
                     onPressed: _loading ? null : _validateAndLogin,
@@ -145,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 14),
 
-                // Forgot Password
                 InkWell(
                   onTap: () {
                     Navigator.push(
@@ -160,7 +162,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 12),
 
-                // Signup link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -170,7 +171,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SignupScreen()),
+                            builder: (context) => const SignupScreen(),
+                          ),
                         );
                       },
                       child: const Text('Sign up'),

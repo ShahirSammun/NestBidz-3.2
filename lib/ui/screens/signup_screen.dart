@@ -23,10 +23,11 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _confirmPasswordError;
 
   bool _loading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
-  List<bool> isSelected = [true, false]; // [Seller, Buyer]
+  List<bool> isSelected = [true, false];
 
-  // Validate & Firebase Signup
   void _validateInputs() async {
     setState(() {
       _nameError = null;
@@ -43,7 +44,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$").hasMatch(email)) {
         _emailError = "Please enter a valid email.";
       }
-      if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#%^&*]).{8,}$').hasMatch(password)) {
+      if (!RegExp(r'^(?=.[0-9])(?=.[!@#%^&*]).{8,}$').hasMatch(password)) {
         _passwordError = "Password must be 8+ chars, include letter, number & symbol.";
       }
       if (confirmPassword != password) _confirmPasswordError = "Passwords do not match.";
@@ -57,13 +58,11 @@ class _SignupScreenState extends State<SignupScreen> {
       try {
         String role = isSelected[0] ? "Seller" : "Buyer";
 
-        // Firebase Auth Signup
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim());
 
-        // Firestore write
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredential.user!.uid)
@@ -74,7 +73,6 @@ class _SignupScreenState extends State<SignupScreen> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Signup successful!"),
@@ -83,7 +81,6 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         );
 
-        // Navigate to LoginScreen after 2 seconds
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacement(
             context,
@@ -119,7 +116,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   Text('Create Account', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 17),
 
-                  // Name
                   TextField(
                     controller: _nameController,
                     decoration: InputDecoration(
@@ -133,7 +129,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 17),
 
-                  // Email
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -147,32 +142,44 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 17),
 
-                  // Password
                   TextField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Password',
                       prefixIcon: const Icon(Icons.lock),
                       errorText: _passwordError,
-                      suffixIcon: _passwordError != null
-                          ? const Icon(Icons.warning, color: Colors.red)
-                          : null,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 17),
 
-                  // Confirm Password
                   TextField(
                     controller: _confirmPasswordController,
-                    obscureText: true,
+                    obscureText: _obscureConfirmPassword,
                     decoration: InputDecoration(
                       hintText: 'Confirm Password',
                       prefixIcon: const Icon(Icons.lock),
                       errorText: _confirmPasswordError,
-                      suffixIcon: _confirmPasswordError != null
-                          ? const Icon(Icons.warning, color: Colors.red)
-                          : null,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -202,7 +209,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Sign up button with loading
                   Center(
                     child: ElevatedButton(
                       onPressed: _loading ? null : _validateInputs,
@@ -220,7 +226,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  // Sign in link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -1,58 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_application6/ui/widget/favorite_listing_card.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
+import 'property_details.dart';
 
 class FavoriteListingsScreen extends StatelessWidget {
   const FavoriteListingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Using the same dummy data from ListingScreen
-    final favorites = [
-      {
-        "title": "Bachelor-Friendly Room",
-        "location": "Ambarkhana, Sylhet",
-        "price": "BDT 5,000/month",
-        "imageAsset": "assets/images/room25.jpg",
-      },
-      {
-        "title": "Family Apartment for Rent",
-        "location": "Dhaka",
-        "price": "BDT 15,000/month",
-        "imageAsset": "assets/images/flat25.jpg",
-      },
-      {
-        "title": "Luxury Villa for Rent",
-        "location": "Cox's Bazar",
-        "price": "BDT 50,000/month",
-        "imageAsset": "assets/images/villa22.jpg",
-      },
-      {
-        "title": "Cozy Studio Flat",
-        "location": "Sylhet",
-        "price": "BDT 5000000",
-        "imageAsset": "assets/images/apartment25.jpg",
-      },
-      {
-        "title": "Pearl Villa 2 BHK for Sale",
-        "location": "Cox's Bazar",
-        "price": "BDT 10000000",
-        "imageAsset": "assets/images/villaa.jpg",
-      },
-      {
-        "title": "Spacious Plot for Sale",
-        "location": "Comilla",
-        "price": "BDT 800000",
-        "imageAsset": "assets/images/plot25.jpg",
-      },
-    ];
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text("Please login to view favorites"),
+        ),
+      );
+    }
+
+    final favCollection = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('favorites');
 
     return Scaffold(
       body: ScreenBackground(
         child: SafeArea(
           child: Column(
             children: [
-              // Top bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
@@ -76,21 +53,59 @@ class FavoriteListingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 15),
-
-              // Favorite Listings
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                  itemCount: favorites.length,
-                  itemBuilder: (context, index) {
-                    final item = favorites[index];
-                    return FavoriteListingCard(
-                      title: item["title"] as String,
-                      location: item["location"] as String,
-                      price: item["price"] as String,
-                      imageAsset: item["imageAsset"] as String,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: favCollection.snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(
+                        child: Text("No favorites yet."),
+                      );
+                    }
+
+                    final favorites = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                      itemCount: favorites.length,
+                      itemBuilder: (context, index) {
+                        final doc = favorites[index];
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        String price = '';
+                        if (data['price'] != null) price = data['price'].toString();
+                        String title = data['title'] ?? '';
+                        String location = data['location'] ?? '';
+                        String image = 'assets/images/placeholder.png';
+                        if (data['images'] != null && (data['images'] as List).isNotEmpty) {
+                          image = data['images'][0];
+                        }
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PropertyDetailsScreen(property: data),
+                              ),
+                            );
+                          },
+                          child: FavoriteListingCard(
+                            title: title,
+                            location: location,
+                            price: price,
+                            imageAsset: image,
+                            onRemove: () async {
+                              await favCollection.doc(doc.id).delete();
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

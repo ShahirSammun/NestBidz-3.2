@@ -1,31 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_application6/ui/screens/add_property.dart';
-import 'package:mobile_application6/ui/screens/chat_screen.dart';
-import 'package:mobile_application6/ui/screens/favorite_listing.dart';
+import 'package:mobile_application6/ui/screens/property_details.dart';
 import 'package:mobile_application6/ui/screens/recently_added.dart';
 import 'package:mobile_application6/ui/widget/screen_background.dart';
 import '../widget/appDrawer.dart';
 
 class SellerHomePage extends StatelessWidget {
   const SellerHomePage({Key? key}) : super(key: key);
-
-  static const List<Map<String, String>> featuredProperties = [
-    {
-      'image': 'assets/images/pic11.jpg',
-      'price': '\$3000',
-      'details': '2 Bed • 2 Bath',
-    },
-    {
-      'image': 'assets/images/pic2.jpg',
-      'price': '\$2500',
-      'details': '3 Bed • 2 Bath',
-    },
-    {
-      'image': 'assets/images/pic3.jpg',
-      'price': '\$4000',
-      'details': '4 Bed • 3 Bath',
-    },
-  ];
 
   static const List<Map<String, String>> categories = [
     {'image': 'assets/images/villa.png', 'title': 'Villa'},
@@ -67,7 +49,7 @@ class SellerHomePage extends StatelessWidget {
                       const SizedBox(width: 40),
                     ],
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 58),
 
                   // Categories Section
                   const Text(
@@ -82,13 +64,11 @@ class SellerHomePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: categories
-                        .map((cat) =>
-                        _categoryItem(context, cat['image']!, cat['title']!))
+                        .map((cat) => _categoryItem(
+                            context, cat['image']!, cat['title']!))
                         .toList(),
                   ),
                   const SizedBox(height: 30),
-
-                  // Recently Added Listings
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -105,7 +85,7 @@ class SellerHomePage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => RecentlyAddedPage()),
+                                builder: (_) => RecentlyAddedPage()),
                           );
                         },
                         child: const Text(
@@ -116,85 +96,127 @@ class SellerHomePage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
+
                   SizedBox(
                     height: 220,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: featuredProperties.length,
-                      itemBuilder: (context, index) {
-                        final property = featuredProperties[index];
-                        return Container(
-                          width: 250,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Image.asset(
-                                  property['image']!,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Container(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('properties')
+                          .orderBy('createdAt', descending: true)
+                          .limit(3)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(
+                              child: Text("No properties available"));
+                        }
+                        final docs = snapshot.data!.docs;
+
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: docs.length,
+                          itemBuilder: (context, index) {
+                            final doc = docs[index];
+                            final data = doc.data()! as Map<String, dynamic>;
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PropertyDetailsScreen(
+                                      property: data,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 250,
+                                margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.black.withOpacity(0.6),
-                                    ],
-                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Positioned(
-                                bottom: 12,
-                                left: 12,
-                                right: 12,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Stack(
                                   children: [
-                                    Text(
-                                      property['price']!,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors.white,
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: data['images'] != null &&
+                                              (data['images'] as List)
+                                                  .isNotEmpty
+                                          ? Image.network(
+                                              data['images'][0],
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "assets/images/placeholder.png",
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.black.withOpacity(0.6),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      property['details']!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                    Positioned(
+                                      bottom: 12,
+                                      left: 12,
+                                      right: 12,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "\$${data['price']}",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            "${data['bedrooms'] ?? 0} Bed • ${data['bathrooms'] ?? 0} Bath",
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
                     ),
                   ),
 
                   const Spacer(),
-
-                  // Bottom Navigation Icons
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
@@ -206,31 +228,12 @@ class SellerHomePage extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.home, color: Colors.black),
-                          onPressed: () {
-                            // Add action if needed, or leave empty
-                          },
+                          onPressed: () {},
                         ),
                         IconButton(
-                          icon: const Icon(Icons.chat_bubble_outline, color: Colors.black),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ChatScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border, color: Colors.black),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const FavoriteListingsScreen(),
-                              ),
-                            );
-                          },
+                          icon: const Icon(Icons.chat_bubble_outline,
+                              color: Colors.black),
+                          onPressed: () {},
                         ),
                       ],
                     ),
@@ -244,14 +247,13 @@ class SellerHomePage extends StatelessWidget {
     );
   }
 
-  // Updated _categoryItem with navigation
-  static Widget _categoryItem(BuildContext context, String imagePath, String title) {
+  static Widget _categoryItem(
+      BuildContext context, String imagePath, String title) {
     return GestureDetector(
       onTap: () {
-        // Navigate to AddPropertyScreen
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const AddPropertyScreen()),
+          MaterialPageRoute(builder: (_) => AddPropertyScreen(category: title)),
         );
       },
       child: Column(

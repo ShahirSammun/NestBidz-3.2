@@ -5,6 +5,7 @@ class FavoriteListingCard extends StatelessWidget {
   final String location;
   final String price;
   final String imageAsset;
+  final VoidCallback? onRemove;
 
   const FavoriteListingCard({
     super.key,
@@ -12,6 +13,7 @@ class FavoriteListingCard extends StatelessWidget {
     required this.location,
     required this.price,
     required this.imageAsset,
+    this.onRemove,
   });
 
   @override
@@ -32,10 +34,9 @@ class FavoriteListingCard extends StatelessWidget {
                 height: 107,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    imageAsset,
-                    fit: BoxFit.cover,
-                  ),
+                  child: imageAsset.startsWith('http')
+                      ? Image.network(imageAsset, fit: BoxFit.cover)
+                      : Image.asset(imageAsset, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -45,46 +46,25 @@ class FavoriteListingCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.black),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-
-                    // Location
-                    Text(
-                      location,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 12,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
+                    Text(location,
+                        style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-
-                    // Price
-                    Text(
-                      price,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
+                    Text(price,
+                        style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold)),
                     const Spacer(),
-
-                    // Centered Remove Button
                     Align(
                       alignment: Alignment.center,
                       child: ElevatedButton(
@@ -92,20 +72,15 @@ class FavoriteListingCard extends StatelessWidget {
                           backgroundColor: Colors.red.shade50,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 20,
-                          ),
+                              vertical: 4, horizontal: 20),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: onRemove,
                         child: const Text(
                           "Remove",
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.red, fontSize: 12),
                         ),
                       ),
                     ),

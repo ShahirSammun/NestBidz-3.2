@@ -4,16 +4,20 @@ class ListingCard extends StatelessWidget {
   final String title;
   final String location;
   final String price;
-  final String imageAsset;
+  final String imageUrl;
   final bool isActive;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const ListingCard({
     super.key,
     required this.title,
     required this.location,
     required this.price,
-    required this.imageAsset,
+    required this.imageUrl,
     this.isActive = true,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -24,23 +28,31 @@ class ListingCard extends StatelessWidget {
       color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 6), // small horizontal margin too
+      margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
       child: SizedBox(
-        height: 130, // card height
+        height: 130,
         child: Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 6, right: 6), // <-- left & right spacing
+              padding: const EdgeInsets.symmetric(horizontal: 6),
               child: SizedBox(
                 width: 100,
                 height: 107,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    imageAsset,
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                    imageUrl,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                        "assets/images/placeholder.png",
+                        fit: BoxFit.cover),
                     color: isActive ? null : Colors.grey.withOpacity(0.5),
                     colorBlendMode: isActive ? null : BlendMode.modulate,
+                  )
+                      : Image.asset(
+                    "assets/images/placeholder.png",
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -62,32 +74,32 @@ class ListingCard extends StatelessWidget {
                               fontSize: 15,
                               color: isActive ? Colors.black : Colors.grey,
                             ),
-                            maxLines: 2,
+                            maxLines: 2, // Allow 2 lines
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (isActive)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              "Active",
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                "Active",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
                       ],
                     ),
-
                     const SizedBox(height: 2),
-
-                    // Location
                     Text(
                       location,
                       style: TextStyle(
@@ -97,10 +109,7 @@ class ListingCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     const SizedBox(height: 2),
-
-                    // Price
                     Text(
                       price,
                       style: TextStyle(
@@ -109,28 +118,29 @@ class ListingCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const Spacer(),
-
                     // Buttons
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                              isActive ? Colors.grey.shade200 : Colors.grey.shade300,
+                              backgroundColor: isActive
+                                  ? Colors.grey.shade200
+                                  : Colors.grey.shade300,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: onEdit,
                             child: Text(
                               "Edit",
                               style: TextStyle(
-                                color: isActive ? Colors.black87 : Colors.grey.shade600,
+                                color: isActive
+                                    ? Colors.black87
+                                    : Colors.grey.shade600,
                                 fontSize: 12,
                               ),
                             ),
@@ -140,15 +150,16 @@ class ListingCard extends StatelessWidget {
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                              isActive ? Colors.red.shade50 : Colors.grey.shade300,
+                              backgroundColor: isActive
+                                  ? Colors.red.shade50
+                                  : Colors.grey.shade300,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: onDelete,
                             child: Text(
                               "Delete",
                               style: TextStyle(

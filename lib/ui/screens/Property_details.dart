@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PropertyDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> property;
-
   const PropertyDetailsScreen({super.key, required this.property});
 
   @override
@@ -12,15 +13,73 @@ class PropertyDetailsScreen extends StatefulWidget {
 class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  bool isFavorite = false;
+  final User? user = FirebaseAuth.instance.currentUser;
+  String userRole = 'Buyer';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole();
+    checkIfFavorite();
+  }
+
+  void fetchUserRole() async {
+    if (user == null) return;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+    if (doc.exists) {
+      setState(() {
+        userRole = doc.data()?['role'] ?? 'Buyer';
+      });
+    }
+  }
+
+  void checkIfFavorite() async {
+    if (user == null) return;
+    final propertyDocId =
+        widget.property['title'] + (widget.property['location'] ?? '');
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('favorites')
+        .doc(propertyDocId)
+        .get();
+
+    setState(() {
+      isFavorite = doc.exists;
+    });
+  }
+
+  void toggleFavorite() async {
+    if (user == null) return;
+    final propertyDocId =
+        widget.property['title'] + (widget.property['location'] ?? '');
+    final favRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('favorites')
+        .doc(propertyDocId);
+
+    if (isFavorite) {
+      await favRef.delete();
+    } else {
+      await favRef.set(widget.property);
+    }
+
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<String> images = [
-      widget.property["image"],
-      "assets/images/apartment.jpg",
-      "assets/images/mess2.jpg",
-      "assets/images/plot22.jpg",
-    ];
+    final List<String> images = widget.property['images'] != null &&
+            (widget.property['images'] as List).isNotEmpty
+        ? List<String>.from(widget.property['images'])
+        : ["assets/images/placeholder.png"];
 
     final double screenHeight = MediaQuery.of(context).size.height;
 
@@ -29,7 +88,6 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
         children: [
           Column(
             children: [
-              // Top Image
               SizedBox(
                 height: screenHeight * 0.45,
                 width: double.infinity,
@@ -42,23 +100,28 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                     });
                   },
                   itemBuilder: (context, index) {
-                    return Image.asset(
-                      images[index],
-                      width: double.infinity,
-                      height: screenHeight * 0.45,
-                      fit: BoxFit.cover,
-                    );
+                    final image = images[index];
+                    return image.startsWith('http')
+                        ? Image.network(
+                            image,
+                            width: double.infinity,
+                            height: screenHeight * 0.45,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            image,
+                            width: double.infinity,
+                            height: screenHeight * 0.45,
+                            fit: BoxFit.cover,
+                          );
                   },
                 ),
               ),
-              // Empty space to fill under image
               Expanded(child: Container()),
             ],
           ),
-
-          // White Details Card
           Positioned(
-            top: screenHeight * 0.38, // slightly overlap
+            top: screenHeight * 0.38,
             left: 0,
             right: 0,
             bottom: 0,
@@ -71,7 +134,6 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                 padding: const EdgeInsets.all(16),
                 child: ListView(
                   children: [
-                    // Title + Favorite
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -79,54 +141,69 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                widget.property["title"],
-                                style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      widget.property["title"] ?? '',
+                                      style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      isFavorite
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: Colors.red,
+                                      size: 28,
+                                    ),
+                                    onPressed: toggleFavorite,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
-                                widget.property["location"],
+                                widget.property["location"] ?? '',
                                 style: const TextStyle(
                                     fontSize: 16, color: Colors.black),
                               ),
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border,
-                              color: Colors.red, size: 28),
-                          onPressed: () {},
-                        ),
                       ],
                     ),
                     const SizedBox(height: 22),
-
-                    // Info Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Column(
-                          children: const [
-                            Icon(Icons.bed, size: 26, color: Colors.black87),
-                            SizedBox(height: 4),
-                            Text("4 Bedroom", style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                        Column(
-                          children: const [
-                            Icon(Icons.bathtub, size: 26, color: Colors.black87),
-                            SizedBox(height: 4),
-                            Text("2 Bathroom", style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                        Column(
-                          children: const [
-                            Icon(Icons.local_parking,
+                          children: [
+                            const Icon(Icons.bed,
                                 size: 26, color: Colors.black87),
-                            SizedBox(height: 4),
-                            Text("Parking", style: TextStyle(fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text("${widget.property['bedrooms'] ?? 0} Bedroom",
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            const Icon(Icons.bathtub,
+                                size: 26, color: Colors.black87),
+                            const SizedBox(height: 4),
+                            Text(
+                                "${widget.property['bathrooms'] ?? 0} Bathroom",
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            const Icon(Icons.local_parking,
+                                size: 26, color: Colors.black87),
+                            const SizedBox(height: 4),
+                            Text("${widget.property['parking'] ?? 0} Parking",
+                                style: const TextStyle(fontSize: 14)),
                           ],
                         ),
                         Column(
@@ -134,54 +211,65 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             const Icon(Icons.square_foot,
                                 size: 26, color: Colors.black87),
                             const SizedBox(height: 4),
-                            Text(widget.property["area"],
+                            Text("${widget.property['area'] ?? ''}",
                                 style: const TextStyle(fontSize: 14)),
                           ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-
-                    // Description
                     const Text(
                       "Description",
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "This is a beautiful ${widget.property["type"]} located at ${widget.property["location"]}. "
-                          "It offers a spacious area of ${widget.property["area"]} and is priced at ${widget.property["price"]}. "
-                          "Nearby amenities include markets, bus stations, cinemas, and more.",
-                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      widget.property["description"] ??
+                          "This is a beautiful ${widget.property["type"] ?? ''} located at ${widget.property["location"] ?? ''}. "
+                              "It offers a spacious area of ${widget.property["area"] ?? ''} and is priced at ${widget.property["price"] ?? ''}. "
+                              "Nearby amenities include markets, bus stations, cinemas, and more.",
+                      style:
+                          const TextStyle(fontSize: 14, color: Colors.black87),
                     ),
-                    const SizedBox(height: 20),
-
-                    // Price + Message Button
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Contact Number",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.property["contactNumber"] ?? '',
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 22),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.property["price"],
+                          "Price:৳${widget.property['price'] ?? '0'}",
                           style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.black),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black87,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        if (userRole != 'Seller')
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black87,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 28, vertical: 12),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 28, vertical: 12),
+                            child: const Text("Message",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white)),
                           ),
-                          child: const Text("Message",
-                              style:
-                              TextStyle(fontSize: 16, color: Colors.white)),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -190,10 +278,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
               ),
             ),
           ),
-
-          // Floating Dots on top of white card
           Positioned(
-            top: screenHeight * 0.41, // just above the card
+            top: screenHeight * 0.41,
             left: 0,
             right: 0,
             child: Row(
@@ -205,15 +291,14 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   height: 8,
                   width: _currentIndex == index ? 18 : 8,
                   decoration: BoxDecoration(
-                    color: _currentIndex == index ? Colors.black : Colors.black54,
+                    color:
+                        _currentIndex == index ? Colors.black : Colors.black54,
                     borderRadius: BorderRadius.circular(12),
                   ),
                 );
               }),
             ),
           ),
-
-          // Back Button
           Positioned(
             top: 40,
             left: 16,
@@ -225,7 +310,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   color: Colors.black.withOpacity(0.4),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 22),
               ),
             ),
           ),

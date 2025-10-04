@@ -7,113 +7,136 @@ class AboutUsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "About Us",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.grey,
-        centerTitle: true,
-      ),
-      body: const ScreenBackground(
-        child: Center(
+      body: ScreenBackground(
+        child: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                // Back Arrow + Title Row
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, size: 28),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        "About Us",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 48), // to balance space with back arrow
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Instructor Section
+                const Text(
                   "Instructed By:",
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12),
-                CircleAvatar(
+                const SizedBox(height: 12),
+                const CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/instructor.jpg"),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   "Md Jamaner Rahman",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                Text(
+                const Text(
                   "Lecturer",
                   style: TextStyle(fontSize: 16),
                 ),
-                Text(
+                const Text(
                   "Department of CSE",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
 
-                SizedBox(height: 28),
-                Text(
+                const SizedBox(height: 28),
+
+                /// Developer Section
+                const Text(
                   "Developed By:",
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 20),
-                CircleAvatar(
+                const SizedBox(height: 20),
+
+                /// Sammun
+                const CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/sammun.jpg"),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   "Md Shahir Sammun",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                Text(
+                const Text(
                   "Batch: 57",
                   style: TextStyle(fontSize: 16),
                 ),
-                Text(
+                const Text(
                   "Department of CSE",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
 
-                SizedBox(height: 23),
+                const SizedBox(height: 23),
 
-                CircleAvatar(
+                /// Kamran
+                const CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/kamran.jpg"),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   "Md Kamran Hussen",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                Text(
+                const Text(
                   "Batch: 57",
                   style: TextStyle(fontSize: 16),
                 ),
-                Text(
+                const Text(
                   "Department of CSE",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
 
-                SizedBox(height: 23),
+                const SizedBox(height: 23),
 
-                CircleAvatar(
+                /// Nusrat
+                const CircleAvatar(
                   radius: 45,
                   backgroundImage: AssetImage("assets/images/nusrat.jpg"),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   "Nusrat Jahan Shamantha",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                Text(
+                const Text(
                   "Batch: 57",
                   style: TextStyle(fontSize: 16),
                 ),
-                Text(
+                const Text(
                   "Department of CSE",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
