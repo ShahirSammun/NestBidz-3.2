@@ -44,7 +44,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!RegExp(r"^[a-zA-Z0-9._%+-]+@(gmail\.com|lus\.ac\.bd)$").hasMatch(email)) {
         _emailError = "Please enter a valid email.";
       }
-      if (!RegExp(r'^(?=.[0-9])(?=.[!@#%^&*]).{8,}$').hasMatch(password)) {
+      if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#%^&*]).{8,}$').hasMatch(password)) {
         _passwordError = "Password must be 8+ chars, include letter, number & symbol.";
       }
       if (confirmPassword != password) _confirmPasswordError = "Passwords do not match.";
